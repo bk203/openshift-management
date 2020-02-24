@@ -1,2 +1,5 @@
 .idea
 .DS_Store
+./inventory/*
+!./inventory/.gitkeep
+!/inventory/group_vars/

@@ -26,6 +26,11 @@
     - openshift-ansible-service-broker
     - openshift-management
     - openshift
+    - openshift-console
+    - openshift-logging
+    - openshift-metrics-server
+    - openshift-monitoring
+    - openshift-sdn
 
 - name: Debug quota projects excluder
   debug:

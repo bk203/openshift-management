@@ -1,0 +1,159 @@
+[masters]
+test1-ams1-master0[1:3].scalia.io
+
+[etcd]
+test1-ams1-master0[1:3].scalia.io
+
+[nodes]
+test1-ams1-master0[1:3].scalia.io openshift_node_group_name='node-config-master' openshift_schedulable=True
+test1-ams1-infra0[1:3].scalia.io openshift_node_group_name='node-config-infra' openshift_schedulable=True
+test1-ams1-node0[1:4].scalia.io openshift_node_group_name='node-config-compute' openshift_schedulable=True
+
+[lb]
+test1-ams1-load01.scalia.io
+
+[OSEv3:children]
+masters
+nodes
+etcd
+lb
+
+[OSEv3:vars]
+###############################################################################
+# Common/ Required configuration variables follow                             #
+###############################################################################
+# SSH user, this user should allow ssh based auth without requiring a
+# password. If using ssh key based auth, then the key should be managed by an
+# ssh agent.
+ansible_user=root
+
+# If ansible_user is not root, ansible_become must be set to true and the
+# user must be configured for passwordless sudo
+#ansible_become=yes
+
+# Specify the deployment type. Valid values are origin and openshift-enterprise.
+openshift_deployment_type=origin
+
+# Specify the generic release of OpenShift to install. This is used mainly just during installation, after which we
+# rely on the version running on the first master. Works best for containerized installs where we can usually
+# use this to lookup the latest exact version of the container images, which is the tag actually used to configure
+# the cluster. For RPM installations we just verify the version detected in your configured repos matches this
+# release.
+openshift_release="3.11.0"
+
+openshift_master_cluster_method=native
+openshift_rolling_restart_mode=system
+os_firewall_use_firewalld=true
+
+# default subdomain to use for exposed routes, you should have wildcard dns
+# for *.apps.test.example.com that points at your infra nodes which will run
+# your router
+openshift_master_default_subdomain=apps.scalia.io
+
+#Set cluster_hostname to point at your load balancer
+openshift_master_cluster_public_hostname=console-test.scalia.io
+openshift_master_cluster_hostname=console-internal-test.scalia.io
+
+###############################################################################
+# Additional configuration variables follow                                   #
+###############################################################################
+
+# Debug level for all OpenShift components (Defaults to 2)
+debug_level=0
+
+# Specify an exact container image tag to install or configure.
+# WARNING: This value will be used for all hosts in containerized environments, even those that have another version installed.
+# This could potentially trigger an upgrade and downtime, so be careful with modifying this value after the cluster is set up.
+openshift_image_tag=v3.11.0
+
+# Specify an exact rpm version to install or configure.
+# WARNING: This value will be used for all hosts in RPM based environments, even those that have another version installed.
+# This could potentially trigger an upgrade and downtime, so be careful with modifying this value after the cluster is set up.
+openshift_pkg_version=-3.11.0
+
+# https://github.com/openshift/openshift-ansible/issues/10826#issuecomment-444899246
+#docker_version="1.13.1-75.git8633870.el7.centos.x86_64"
+
+# Skip upgrading Docker during an OpenShift upgrade, leaves the current Docker version alone.
+#docker_upgrade=False
+
+# OpenID auth
+openshift_master_identity_providers=[{"name": "openid_auth", "login": "true", "challenge": "false", "kind": "OpenIDIdentityProvider", "client_id": "openshift", "client_secret": "0cef1212-f537-493b-a2e7-c93837a5da00", "claims": {"id": ["sub"], "preferredUsername": ["userId", "preferred_username"], "name": ["name"], "email": ["email"]},"urls": {"authorize": "https://identity-test.scalia.io:8443/auth/realms/Scalia/protocol/openid-connect/auth?client_id=openshift", "token": "https://identity-test.scalia.io:8443/auth/realms/Scalia/protocol/openid-connect/token?client_id=openshift", "userInfo": "https://identity-test.scalia.io:8443/auth/realms/Scalia/protocol/openid-connect/userinfo?client_id=openshift"}}]
+##
+## Configure OpenID CA certificate
+## Specify either the ASCII contents of the certificate or the path to
+## the local file that will be copied to the remote host. CA
+## certificate contents will be copied to master systems and saved
+## within /etc/origin/master/ with a filename matching the "ca" key set
+## within the OpenIDIdentityProvider.
+##
+##openshift_master_openid_ca=<ca text>
+## or
+openshift_master_openid_ca_file=/root/Scalia_Certificates/star.scalia.io/comodo.ca.crt
+#
+## Configure logoutURL in the master config for console customization
+## See: https://docs.okd.io/latest/install_config/web_console_customization.html#changing-the-logout-url
+openshift_master_logout_url=https://identity-test.scalia.io:8443/auth/realms/Scalia/protocol/openid-connect/logout?client_id=openshift&redirect_uri=https%3A%2F%2Fconsole.scalia.io%3A8443%2F
+
+# Native high availability (default cluster method)
+# If an external load balancer is used public hostname should resolve to
+# external load balancer address
+openshift_master_cluster_public_hostname=console-test.scalia.io
+
+# Metrics deployment
+# See: https://docs.openshift.com/container-platform/latest/install_config/cluster_metrics.html
+#
+# By default metrics are not automatically deployed, set this to enable them
+openshift_metrics_install_metrics=true
+#
+# metrics-server deployment
+# By default, metrics-server is not automatically deployed, unless metrics is also
+# deployed.  Deploying metrics-server is necessary to use the HorizontalPodAutoscaler.
+# Set this to enable it.
+openshift_metrics_server_install=true
+
+# Cluster monitoring
+#
+# Cluster monitoring is enabled by default, disable it by setting
+openshift_cluster_monitoring_operator_install=true
+
+# Logging deployment
+#
+# Currently logging deployment is disabled by default, enable it by setting this
+#openshift_logging_install_logging=false
+#
+# Logging storage config
+# Option C - Dynamic -- If openshift supports dynamic volume provisioning for
+# your cloud platform use this.
+#openshift_logging_storage_kind=dynamic
+
+# Enable service catalog
+openshift_enable_service_catalog=true
+
+# Enable template service broker (requires service catalog to be enabled, above)
+template_service_broker_install=true
+
+# Upgrade Control
+#
+# By default nodes are upgraded in a serial manner one at a time and all failures
+# are fatal, one set of variables for normal nodes, one set of variables for
+# nodes that are part of control plane as the number of hosts may be different
+# in those two groups.
+openshift_upgrade_nodes_serial=1
+openshift_upgrade_nodes_max_fail_percentage=0
+openshift_upgrade_control_plane_nodes_serial=1
+openshift_upgrade_control_plane_nodes_max_fail_percentage=0
+
+# Configure custom ca certificate
+# http://v1.uncontained.io/playbooks/installation/custom_certificates.html
+
+openshift_certificates_redeploy=false
+openshift_additional_ca=/root/Scalia_Certificates_2020/wildcard_scalia_io/sectigo.ca.crt
+openshift_master_overwrite_named_certificates=true
+openshift_certificate_expiry_warning_days=60
+openshift_master_named_certificates=[{"names": ["console.scalia.io"], "certfile": "/root/Scalia_Certificates_2020/wildcard_scalia_io/star_scalia_io.crt", "keyfile": "/root/Scalia_Certificates_2020/wildcard_scalia_io/scalia_io.key", "cafile": "/root/Scalia_Certificates_2020/wildcard_scalia_io/sectigo.ca.crt"}]
+
+# Router certificate
+# Provide local certificate paths which will be configured as the
+# router's default certificate.
+openshift_hosted_router_certificate={"certfile": "/root/Scalia_Certificates_2020/wildcard_apps_scalia_io/wildcard_apps_scalia_io.pem", "keyfile": "/root/Scalia_Certificates_2020/wildcard_apps_scalia_io/wildcard_apps_scalia_io.key.pem", "cafile": "/root/Scalia_Certificates_2020/wildcard_apps_scalia_io/sectigo.ca.pem"}

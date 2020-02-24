@@ -29,6 +29,18 @@ items:
       cpu: "4"
       memory: 8Gi
 - apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    annotations:
+      openshift.io/quota-tier: Small
+    labels:
+      quota-tier: Small
+    name: quota-storage
+  spec:
+    hard:
+      persistentvolumeclaims: "10"
+      requests.storage: "25G"
+- apiVersion: v1
   kind: LimitRange
   metadata:
     annotations:

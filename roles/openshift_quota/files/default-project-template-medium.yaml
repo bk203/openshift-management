@@ -76,60 +76,72 @@ objects:
   kind: ResourceQuota
   metadata:
     annotations:
-      openshift.io/quota-tier: Small
+      openshift.io/quota-tier: Medium
     labels:
-      quota-tier: Small
+      quota-tier: Medium
     name: quota
     namespace: ${PROJECT_NAME}
   spec:
     hard:
-      cpu: "2"
-      memory: 4Gi
+      cpu: "4"
+      memory: 8Gi
     scopes:
     - NotTerminating
 - apiVersion: v1
   kind: ResourceQuota
   metadata:
     annotations:
-      openshift.io/quota-tier: Small
+      openshift.io/quota-tier: Medium
     labels:
-      quota-tier: Small
+      quota-tier: Medium
     name: burst-quota
     namespace: ${PROJECT_NAME}
   spec:
     hard:
-      cpu: "4"
-      memory: 8Gi
+      cpu: "6"
+      memory: 12Gi
+- apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    annotations:
+      openshift.io/quota-tier: Medium
+    labels:
+      quota-tier: Medium
+    name: quota-storage
+  spec:
+    hard:
+      persistentvolumeclaims: "10"
+      requests.storage: "50G"
 - apiVersion: v1
   kind: LimitRange
   metadata:
     annotations:
-      openshift.io/quota-tier: Small
+      openshift.io/quota-tier: Medium
     labels:
-      quota-tier: Small
+      quota-tier: Medium
     name: limits
     namespace: ${PROJECT_NAME}
   spec:
     limits:
     - max:
-        cpu: "1"
-        memory: 2Gi
+        cpu: "2"
+        memory: 4Gi
       min:
-        cpu: 10m
+        cpu: 20m
         memory: 128Mi
       type: Pod
     - default:
-        cpu: 500m
-        memory: 512Mi
+        cpu: "1"
+        memory: 1Gi
       defaultRequest:
         cpu: 50m
         memory: 256Mi
       max:
-        cpu: "1"
-        memory: 2Gi
+        cpu: "2"
+        memory: 4Gi
       min:
-        cpu: 10m
-        memory: 128Mi
+        cpu: 20m
+        memory: 256Mi
       type: Container
 parameters:
 - name: PROJECT_NAME
